@@ -466,8 +466,8 @@ main(int argc, char **argv)
   }
   if(scale != 1)
   scaleV(scale);
-  if(numD == 2)
-  project = SCHLEGEL2D;
+  if(dimread == 2)
+  projector = SCHLEGEL2D;
   switch(projector)
   {
       case SCHLEGEL3D:
