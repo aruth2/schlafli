@@ -1,6 +1,6 @@
 # schlafli
 openGL viewer for Polytopes and Tesselations of any dimension
-![Great Stellated 120-cell](https://raw.githubusercontent.com/aruth2/schlafli/master/120cell.png)
+![Great Stellated 120-cell](https://raw.githubusercontent.com/aruth2/schlafli/master/120cell.gif)
 
 **TO USE:**
 
