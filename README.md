@@ -2,6 +2,8 @@
 openGL viewer for Polytopes and Tesselations of any dimension
 ![Great Stellated 120-cell](https://raw.githubusercontent.com/aruth2/schlafli/master/120cell.gif)
 
+This code comes in 2 main parts. The interpreter is passed a schlafli symbol and produces the geometrical description of the polytope, and the viewer displays and/or manipulates the polytope. The interpreters are written in python and ruby whereas the viewer is written in C.
+
 **TO USE:**
 
 Compile the file polytope.c. This was tested using the freeglut3 implementation of openGL. 
@@ -39,7 +41,5 @@ A regular polytope has a regular vertex figure. The vertex figure of a regular p
 
 Regular polytopes can have star polygon elements, like the pentagram, with symbol {5/2}, represented by the vertices of a pentagon but connected alternately.
 
-
-This code comes in 2 main parts. The interpreter is passed a schlafli symbol and produces the geometrical description of the polytope, and the viewer displays and/or manipulates the polytope.
 
 
