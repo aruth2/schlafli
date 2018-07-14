@@ -23,7 +23,7 @@ GLfloat angle1 = 0.43, angle2 = 0.023;
 
 enum proj {SCHLEGEL3D, SCHLEGEL2D};
 int projector = SCHLEGEL3D;
-
+double schlegeldistance = 0;
 
 GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};  /* Red diffuse light. */
 GLfloat light_ambient[] = {1.0, 0.0, 0.0, 0.0};  /* Red ambient light. */
@@ -440,6 +440,8 @@ main(int argc, char **argv)
           scale = atof(argv[i+1]);
           if(!strcmp(argv[i],"-symbol"))
           symbol = argv[i+1];
+          if(!strcmp(argv[i],"-schlegeldistance"))
+          schlegeldistance = atof(argv[i+1]);
           if(!strcmp(argv[i],"schlegel3d"))
           projector = SCHLEGEL3D;
           if(!strcmp(argv[i],"schlegel2d"))
@@ -464,6 +466,8 @@ main(int argc, char **argv)
       readAll("geo",numD);
       center();
   }
+  if(schlegeldistance == 1)
+  schlegeldistance = 2*scale;
   if(scale != 1)
   scaleV(scale);
   if(dimread == 2)
@@ -471,10 +475,10 @@ main(int argc, char **argv)
   switch(projector)
   {
       case SCHLEGEL3D:
-      schlegel(3,2*scale);
+      schlegel(3,schlegeldistance);
       break;
       case SCHLEGEL2D:
-      schlegel(2,2*scale);
+      schlegel(2,schlegeldistance);
       break;
   }
 
