@@ -18,7 +18,7 @@ int nV,nE,nEv,nF,nFv;
 int dim = 3, dimread;
 double scale=1;
 char *symbol = NULL;
-char *interpreter = "./schlafli_interpreter.py";
+char *interpreter = "python3 ./schlafli_interpreter.py";
 GLfloat angle1 = 0.43, angle2 = 0.023;
 
 enum proj {SCHLEGEL3D, SCHLEGEL2D};
