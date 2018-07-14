@@ -14,10 +14,11 @@ Execute the code by providing it a description of the geometry (e.g.)
 
     ./polytope -symbol "5/2 3 5" -scale 2.5
 
-Commandline options are:
+Commandline options are (Any order is accepted but options with "-" are expected to be followed by something):
 
     -symbol "[schlafli symbol]"
     -scale [multiplier] - scales the geometry of the shape by the multiplier
+    -schlegeldistance [distance] - specifies the distance from the origin used in schlegel projection
     schlegel3d - {default} projects a more-than-3 dimensional shape into 3 dimensions using the schlegel projection method.
     schlegel2d - projects a more-than-2 dimensional shape into 2 dimensions using the schlegel projection method.
 
