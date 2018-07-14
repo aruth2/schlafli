@@ -19,13 +19,6 @@ Commandline options are:
     schlegel3d - {default} projects a more-than-3 dimensional shape into 3 dimensions using the schlegel projection method.
     schlegel2d - projects a more-than-2 dimensional shape into 2 dimensions using the schlegel projection method.
 
-Intended future options:
-   
-    wireframe - plots every edge of the figure using a wireframe mesh
-    solid - plots every face of the figure using polygons
-    net - shows an expanded net n-1 dimensional polytopes 
-
-
 *Explanation of Schlafli symbol:*
 
 Based upon a community-answered question at: https://codegolf.stackexchange.com/questions/114280/schläfli-convex-regular-polytope-interpreter
