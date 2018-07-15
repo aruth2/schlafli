@@ -19,9 +19,14 @@ Commandline options are (Any order is accepted but options with "-" are expected
     -symbol "[schlafli symbol]"
     -scale [multiplier] - scales the geometry of the shape by the multiplier
     -schlegeldistance [distance] - specifies the distance from the origin used in schlegel projection
+    -pointsize [size]
+    -linewidth [size]
     schlegel3d - {default} projects a more-than-3 dimensional shape into 3 dimensions using the schlegel projection method.
     schlegel2d - projects a more-than-2 dimensional shape into 2 dimensions using the schlegel projection method.
-
+    points - draw points
+    wireframe - {default} draw edges
+    solid - draw faces. Misbehaves when drawing star polytopes because GL_POLYGON does not support concave shapes
+    
 *Explanation of Schlafli symbol:*
 
 Based upon a community-answered question at: https://codegolf.stackexchange.com/questions/114280/schläfli-convex-regular-polytope-interpreter
