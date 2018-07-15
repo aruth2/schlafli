@@ -12,23 +12,34 @@
 #include <math.h>
 #include <stdio.h>
 
-GLfloat *V, *Vread;
+GLfloat *V = NULL, *Vread;
 int *E,*F;
 int nV,nE,nEv,nF,nFv;
 int dim = 3, dimread;
 double scale=1;
 char *symbol = NULL;
 char *interpreter = "python3 ./schlafli_interpreter.py";
-GLfloat angle1 = 0.43, angle2 = 0.023;
+GLfloat angle1 = 0.13, angle2 = 0.023, angle3 = 0;
 
 enum proj {SCHLEGEL3D, SCHLEGEL2D};
 int projector = SCHLEGEL3D;
 double schlegeldistance = 0;
+int schlegelrotate = 0;
+int autorotate = 1;
+double linewidth = 2;
+double pointsize = 7;
+int points = 0;
+int wireframe = 0;
+int solid = 0;
 
-GLfloat light_diffuse[] = {1.0, 0.0, 0.0, 1.0};  /* Red diffuse light. */
-GLfloat light_ambient[] = {1.0, 0.0, 0.0, 0.0};  /* Red ambient light. */
-GLfloat light_position[] = {1.0, 1.0, 1.0, 1.0};  /* Infinite light location. */
+GLfloat light_diffuse[] = {0.05, 0.05, 0.05, 0.0};  /* White diffuse light. */
+//GLfloat light_diffuse[] = {0.0, 0.0, 0.0, 0.0};  /* No diffuse light. */
+GLfloat light_ambient[] = {0.25, 0.25, 0.25, 1.0};  /* ambient light. */
+GLfloat light_position[] = {0.0, 5.0, 0.0, 1.0};  /* Infinite light location. */
 
+GLfloat face_color[] = {0.5, 0.5, 0.5, 1.0};
+GLfloat edge_color[] = {1.0, 1.0, 1.0, 1.0};
+GLfloat vert_color[] = {0.0, 1.0, 1.0, 1.0};
 
 #define cubenV 8
 GLfloat cubeV[cubenV*3] = 
@@ -80,16 +91,16 @@ double p4[12] = {
 };
 
 
-/*
-void faceNorm(GLfloat V[nV][3], int *F, GLfloat *norm)
+
+void faceNorm(GLfloat *V, int *F, GLfloat *norm)
 {
 	//Computes a normal to a face F
 	//The cross product of the vectors from vertex 0 to 1 and 1 to 2 are used
 	//The normal vector is not normalized
 	
 	GLfloat *V0,*V1,*V2;
-	V0 = V[F[0]]; V1 = V[F[1]]; V2 = V[F[2]];
-	//V0 = *(V+F[0]); V1 = *(V+F[1]); V2 = *(V+F[2]);
+	V0 = V + 3*F[0]; V1 = V+ 3*F[1]; V2 = V + 3*F[2];
+
 	GLfloat P[3],Q[3];
 	P[0] = V1[0]-V0[0]; P[1] = V1[1]-V0[1]; P[2] = V1[2]-V0[2];
 	Q[0] = V2[0]-V1[0]; Q[1] = V2[1]-V1[1]; Q[2] = V2[2]-V1[2];
@@ -104,41 +115,37 @@ void faceNorm(GLfloat V[nV][3], int *F, GLfloat *norm)
 void FGAPIENTRY glutSolid( )
 {
     //many more options could be used for glBegin GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS, GL_QUAD_STRIP, and GL_POLYGON
-	
-
+	//glColor3f (1.0, 0.0, 0.0);
 	int iF,iV,vert;
     GLfloat norm[3];
-	//glBegin( GL_QUADS );
-	//glBegin( GL_LINES_STRIP );
-	
     for(iF=0;iF<nF;iF++)
 		{
-		//glBegin( GL_POLYGON );
-		glBegin( GL_LINE_LOOP );
-
-		faceNorm(V,F[iF],norm);
+		glBegin( GL_POLYGON );
+        glMaterialfv(GL_FRONT_AND_BACK, 
+GL_AMBIENT_AND_DIFFUSE , face_color);
+		faceNorm(V,F+iF*nFv,norm);
 		glNormal3d(norm[0],norm[1],norm[2]);
-		//for(iV=0;iV<nFv;iV++)
 		for(iV=0;iV<nFv;iV++)
 			{
-			vert = F[iF][iV];
-			glVertex3d(V[vert][0],V[vert][1],V[vert][2]);
+			vert = F[iF*nFv+iV];
+            glVertex3d(V[vert*dim+0],V[vert*dim+1],V[vert*dim+2]);
 			}
 		glEnd();
 	}
-	//glEnd();
 		
 
-}*/
+}
 
 void FGAPIENTRY glutWireframe( )
 {
-
+//    glColor3f (1.0, 1.0, 1.0);
 	int iE,vert1,vert2;
     
     for(iE=0;iE<nE;iE++)
 		{
         glBegin( GL_LINES );
+        glMaterialfv(GL_FRONT_AND_BACK, 
+GL_AMBIENT_AND_DIFFUSE , edge_color);
         vert1 = E[iE*nEv+0];
         vert2 = E[iE*nEv+1];
         glVertex3d(V[vert1*3+0],V[vert1*3+1],V[vert1*3+2]);		
@@ -148,21 +155,72 @@ void FGAPIENTRY glutWireframe( )
 	    }
 }
 
+void FGAPIENTRY glutPoints( )
+{
+    //many more options could be used for glBegin GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS, GL_QUAD_STRIP, and GL_POLYGON
+	//glColor3f (1.0, 0.0, 0.0);
+	int iV;
+    glBegin( GL_POINTS );
+    glMaterialfv(GL_FRONT_AND_BACK, 
+GL_AMBIENT_AND_DIFFUSE , vert_color);
+    for(iV=0;iV<nV;iV++)
+		{
+        glVertex3d(V[iV*dim+0],V[iV*dim+1],V[iV*dim+2]);
+		
+	}
+	glEnd();	
+
+}
+
 void
 display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  //glutSolid();
+ 
+  if(points)
+  glutPoints();
+  if(wireframe)
   glutWireframe();
+  if(solid)
+  glutSolid();
+ 
+  if(autorotate)
+  {
   glRotatef(angle1, 1.0, 0.0, 0.0);
   glRotatef(angle2, 1.0, 5.0, 0.0);
+    }
   glutSwapBuffers();
 }
 
 void
 init(void)
 {
-	
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glLightModelfv(GL_AMBIENT, light_ambient);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+  glDisable(GL_LIGHT_MODEL_TWO_SIDE);
+//  glEnable(GL_LIGHT_MODEL_AMBIENT);
+  
+  //glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
+  //glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
+  //glLightfv(GL_LIGHT2, GL_DIFFUSE, light2_diffuse);
+  //glLightfv(GL_LIGHT2, GL_POSITION, light2_position);
+//  glEnable(GL_DEPTH_TEST);
+//  glEnable(GL_CULL_FACE);
+  glEnable(GL_BLEND);
+//  glDisable(GL_BLEND);
+// glBlendFunc(GL_ONE_MINUS_DST_ALPHA,GL_DST_ALPHA);  
+//  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+ // glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE);
+  glEnable(GL_COLOR_MATERIAL);
+  glEnable(GL_LINE_SMOOTH);
+  glLineWidth(linewidth);
+  glPointSize(pointsize);
+//  glEnable(GL_POLYGON_STIPPLE);
   /* Setup the view of the cube. */
   glMatrixMode(GL_PROJECTION);
   gluPerspective( /* field of view in degree */ 50.0,
@@ -175,9 +233,27 @@ init(void)
 
 }
 
+void highDrotation()
+{
+    angle3 = fmod(angle3+0.43,360);
+    double newdistance;
+    newdistance = (180-angle3)/180 * schlegeldistance;
+    switch(projector)
+  {
+      case SCHLEGEL3D:
+      schlegel(3,newdistance);
+      break;
+      case SCHLEGEL2D:
+      schlegel(2,newdistance);
+      break;
+  }
+}
+
 void 
 idle(void)
 {
+    if(schlegelrotate)
+    highDrotation();
   glutPostRedisplay();
 }
 
@@ -203,6 +279,68 @@ void center()
         for(iD=0;iD<dimread;iD++)
             *(Vread+iV*dimread+iD) -= moment[iD];
             
+}
+
+int intcontains(int *list, int search, int numitems)
+{
+	if(numitems == 0)
+	return 0;
+	
+	int index;
+	for(index = 0;index<numitems;index++)
+	if(*(list+index) == search)
+	return 1;
+	
+	return 0;
+}
+
+void reorderFaceVertices()
+{
+    //This reorders the vertices in a face so that the vertices are ordered in a way that completes a loop
+    int facestore[nFv];
+    int used[nFv];
+    int numused = 0;
+    int iF,iFv1,iFv2,iE,v1,v2;
+    int found=0;
+    for(iF=0;iF<nF;iF++)
+    {
+        for(iFv1=0;iFv1<nFv;iFv1++)
+        {
+            facestore[iFv1] = F[iF*nFv+iFv1];
+        }
+        numused = 1; //The first vertex in the list is left untouched
+        used[0] = F[iF*nFv];
+        for(iFv1=0;iFv1<nFv-1;iFv1++)
+        {
+            found = 0;
+            v1 = used[iFv1];
+            //printf("First edge %d\n",v1);
+            for(iFv2=0;iFv2<nFv;iFv2++)
+            {
+                if(iFv1 == iFv2)
+                continue;
+                v2 = facestore[iFv2];
+                if(intcontains(used,v2,numused))
+                continue;
+                for(iE=0;iE<nE;iE++)
+                if(intcontains(E+iE*nEv,v1,2) && intcontains(E+iE*nEv,v2,2))
+                {
+                    found = 1;
+                    F[iF*nFv+iFv1+1] = v2;
+                    used[numused] = v2;
+                    numused++;
+                    //printf("Next edge %d\n",v2);
+                    break;   
+                }
+                if(found)
+                break;
+            }
+            if(!found)
+            printf("No vertex was found to connect to vertex %d \n",iFv1);
+        }
+        if(numused != nFv)
+        printf("Not all vertices found. %d expected %d found\n",nFv,numused);
+    }
 }
 
 void scaleV(double scale)
@@ -320,6 +458,7 @@ void schlegel(int finaldim, double distance)
         Vbuffer1=Vbuffer2;
         Vbuffer2=bufferswap;
     }
+    if(V == NULL)
     V = malloc(dim*nV*sizeof(double));
     
     for(iV =0;iV<nV;iV++)
@@ -380,7 +519,7 @@ int tokcount(char *line, char *del)
 void readAll(char *filename, int numD)
 {
     dimread = numD;
-    int iV,iE,iD;
+    int iV,iE,iF,iD;
     FILE *infile = fopen(filename,"r");
     char *line = malloc(1024*sizeof(char));
     fgets(line,1024,infile);
@@ -422,36 +561,75 @@ void readAll(char *filename, int numD)
             tok = strtok(NULL," ");
             }
         }
+    if(numD == 2)
+    {
+    F = malloc(nV*sizeof(int));
+    nFv = nV;
+    nF = 1;
+    for(iV=0;iV<nV;iV++)
+    F[iV]=iV;
+    return;
+    }   
+    fgets(line,1024,infile);//Should be a blank line
+    fgets(line,1024,infile);
+    //printf("Got line %s\n",line);
+    nF = atoi(line);
+    nFv = atoi(strstr(line,"(")+1);
+    //printf("%d faces each with %d vertices\n",nF,nFv);
+    F = malloc(nF*nFv*sizeof(int));
+    for(iF=0;iF<nF;iF++)
+        {
+        fgets(line,1024,infile);
+        //printf("Got line %s\n",line);
+        tok = strtok(line," ");
+        for(iD=0;iD<nFv;iD++)
+            {
+           // printf("Tok is %s\n",tok);
+            F[iF*nFv + iD] = atoi(tok);
+            tok = strtok(NULL," ");
+            }
+        }
+    
 }
 
 int
 main(int argc, char **argv)
 {
   glutInit(&argc, argv);
-  if (argc <= 2)
+  
+  int i;
+  for(i=1;i<argc;i++)
   {
+    if(!strcmp(argv[i],"-scale"))
+    scale = atof(argv[i+1]);
+    if(!strcmp(argv[i],"-symbol"))
+    symbol = argv[i+1];
+    if(!strcmp(argv[i],"-schlegeldistance"))
+    schlegeldistance = atof(argv[i+1]);
+    if(!strcmp(argv[i],"-linewidth"))
+    linewidth = atof(argv[i+1]);
+    if(!strcmp(argv[i],"-pointsize"))
+    linewidth = atof(argv[i+1]);
+    if(!strcmp(argv[i],"schlegel3d"))
+    projector = SCHLEGEL3D;
+    if(!strcmp(argv[i],"schlegel2d"))
+    projector = SCHLEGEL2D;
+    if(!strcmp(argv[i],"schlegelrotate"))
+    schlegelrotate = 1;
+    if(!strcmp(argv[i],"points"))
+    points = 1;
+    if(!strcmp(argv[i],"wireframe"))
+    wireframe = 1;
+    if(!strcmp(argv[i],"solid"))
+    solid = 1;
+    
   }
-  else
-  {
-      int i;
-      for(i=1;i<argc;i++)
-      {
-          if(!strcmp(argv[i],"-scale"))
-          scale = atof(argv[i+1]);
-          if(!strcmp(argv[i],"-symbol"))
-          symbol = argv[i+1];
-          if(!strcmp(argv[i],"-schlegeldistance"))
-          schlegeldistance = atof(argv[i+1]);
-          if(!strcmp(argv[i],"schlegel3d"))
-          projector = SCHLEGEL3D;
-          if(!strcmp(argv[i],"schlegel2d"))
-          projector = SCHLEGEL2D;
-      }
       
-  }
+  
   if(symbol == NULL)
   {
-      V=cubeV; E=cubeE; F=cubeF;
+      dimread=3;
+      Vread=cubeV; E=cubeE; F=cubeF;
       nV=cubenV; nE=cubenE; nEv=cubenEv;
       nF=cubenF; nFv=cubenFv;
   }
@@ -465,13 +643,18 @@ main(int argc, char **argv)
       printf("Number of dimensions %d\n",numD);
       readAll("geo",numD);
       center();
+      reorderFaceVertices();
   }
-  if(schlegeldistance == 1)
+  if(!points && !wireframe && !solid)
+  wireframe = 1;
+  if(schlegeldistance == 0)
   schlegeldistance = 2*scale;
   if(scale != 1)
   scaleV(scale);
   if(dimread == 2)
   projector = SCHLEGEL2D;
+  if(schlegelrotate)
+  autorotate = 0;
   switch(projector)
   {
       case SCHLEGEL3D:
@@ -485,7 +668,7 @@ main(int argc, char **argv)
 
 
 
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_ALPHA);
   glutCreateWindow("Polytope Drawing");
   glutDisplayFunc(display);
   init();
