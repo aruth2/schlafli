@@ -16,6 +16,7 @@ char *helpstring =
 "Usage: polytope [options]\n\n"
 "Command line [options] are:\n"
 "-symbol '[schlafli symbol]' - by default this is set to -symbol '4 3', a cube\n"
+"-vertexlimit [limit] - limits the number of vertices produced by the interpreter, necessary for tesselations\n"
 "-scale [multiplier] - scales the geometry of the shape by the multiplier\n"
 "-schlegeldistance [distance] - specifies the distance from the origin used in schlegel projection\n"
 "-pointsize [size]\n"
@@ -54,6 +55,7 @@ double schlegeldistance = 0;
 double scale=1;
 double linewidth = 2;
 double pointsize = 7;
+int vertexlimit = 0;
 
 //Options used for color and lighting
 GLfloat light_diffuse[] = {0.05, 0.05, 0.05, 0.0};  /* White diffuse light. */
@@ -534,6 +536,8 @@ main(int argc, char **argv)
             linewidth = atof(argv[iarg+1]);
         if(!strcmp(argv[iarg],"-pointsize"))
             pointsize = atof(argv[iarg+1]);
+        if(!strcmp(argv[iarg],"-vertexlimit"))
+            vertexlimit = atoi(argv[iarg+1]);
         if(!strcmp(argv[iarg],"schlegel3d"))
             projector = SCHLEGEL3D;
         if(!strcmp(argv[iarg],"schlegel2d"))
@@ -550,8 +554,13 @@ main(int argc, char **argv)
       
     //Call the interpreter to generate the geometry. Then load the geometry into memory    
     char command[1000];
-    sprintf(command,"echo \"%s \" | %s > geo",mainGeo->symbol,interpreter);
+    //sprintf(command,"echo \"%s \" | %s > geo",mainGeo->symbol,interpreter);
     //printf("%s\n",command);
+    if(vertexlimit)
+    sprintf(command,"%s %s -vlimit=%d > geo",interpreter,mainGeo->symbol,vertexlimit);
+    else
+    sprintf(command,"%s %s > geo",interpreter,mainGeo->symbol);
+    printf("%s\n",command);
     system(command);
     mainGeo->dimread = tokcount(mainGeo->symbol," ")+1;
     readAll(mainGeo,"geo");

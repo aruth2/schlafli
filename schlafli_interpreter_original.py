@@ -17,10 +17,8 @@
 # Other than that, the output lists are in no particular order.
 #
 
-import argparse
 import sys
 from math import *
-vertexlimit = 1e100
 
 # vector minus vector.
 def vmv(a,b): return [x-y for x,y in zip(a,b)]
@@ -110,11 +108,8 @@ def regular_polytope(schlafli):
       newVert = mxvhomo(gens[iGen], verts[iVert])
       newVertKey = vert2key(newVert)
       if newVertKey not in vert2index:
-        if len(verts) < vertexlimit:
-          vert2index[newVertKey] = len(verts)
-          verts.append(newVert)
-        else:
-          vert2index[newVertKey] = -1
+        vert2index[newVertKey] = len(verts)
+        verts.append(newVert)
       multiplicationTable[iVert][iGen] = vert2index[newVertKey]
     iVert += 1
 
@@ -131,10 +126,9 @@ def regular_polytope(schlafli):
       for iGen in range(len(gens)):
         newElt = tuple(sorted([multiplicationTable[iVert][iGen]
                                for iVert in elts[iElt]]))
-        if(newElt[0] != -1):
-          if newElt not in elt2index:
-            elt2index[newElt] = len(elts)
-            elts.append(newElt)
+        if newElt not in elt2index:
+          elt2index[newElt] = len(elts)
+          elts.append(newElt)
       iElt += 1
     edgesEtc.append(elts)
 
@@ -145,19 +139,10 @@ def parseNumberOrFraction(s):
   tokens = s.split('/')
   return float(tokens[0])/float(tokens[1]) if len(tokens)==2 else float(s)
 
-schlafli = []
-
-parser = argparse.ArgumentParser()
-parser.add_argument('numbers', type=str, nargs='+')
-parser.add_argument('-vlimit', type=int, default=-1)
-args = parser.parse_args()
-
-#print(args.numbers)
-#print(args.vlimit)
-if(args.vlimit != -1):
-  vertexlimit = args.vlimit
-for q in args.numbers:
-    schlafli = schlafli + [parseNumberOrFraction(q)]
+if sys.stdin.isatty():
+  sys.stderr.write("Enter schlafli symbol (space-separated numbers or fractions): ")
+  sys.stderr.flush()
+schlafli = [parseNumberOrFraction(token) for token in sys.stdin.readline().split()]
 verts,edgesEtc = regular_polytope(schlafli)
 
 # Hacky polishing of any integers or half-integers give or take rounding error.
