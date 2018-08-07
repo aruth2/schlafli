@@ -6,11 +6,15 @@ This code comes in 2 main parts. The interpreter is passed a schlafli symbol and
 
 **TO USE:**
 
-Compile the file polytope.c. This was tested using the freeglut3 implementation of openGL. 
+Compile the file with make. This was tested using the freeglut3 implementation of openGL. 
 
-    gcc -w -o "polytope" "polytope.c" -lGL -lGLU -lglut -lm
+    make
 
-Execute the code by providing it a description of the geometry (e.g.)
+Execute the code. Some default symbols are accessible within the right-click menu.
+
+    make test
+
+Alternatively, execute the code by providing it a description of the geometry (e.g.)
 
     ./polytope -symbol "5/2 3 5" -scale 2.5
 
